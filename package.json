@@ -1,0 +1,37 @@
+{
+    "name": "micro-lms",
+    "version": "1.0.0",
+    "description": "A mock LMS for testing SCORM 1.2.  Runs in a browser, supports 1 student.  No dependencies.",
+    "main": "index.js",
+    "scripts": {
+        "watch": "webpack --watch",
+        "build": "webpack",
+        "test": "npm run build && firefox SpecRunner.html"
+    },
+    "keywords": [
+        "LMS",
+        "SCORM",
+        "Typescript"
+    ],
+    "author": "Tom Berend",
+    "license": "MIT",
+    
+    "devDependencies": {
+        "@types/jasmine": "^3.6.9",
+        "@types/node": "^14.14.22",
+        "jasmine": "^3.7.0",
+        "ts-loader": "^6.2.2",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.2.4",
+        "webpack": "^4.46.0",
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-server": "^3.11.2"
+    },
+    "comments": {
+        "01": "need Firefox and a localhost server if you want to run 'npm run test'",
+        "02": "x",
+        "03": "x",
+        "04": "x",
+        "05": "x"
+    }
+}
