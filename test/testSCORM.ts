@@ -1,5 +1,6 @@
 import { Scorm, toBoolean } from '../src/scormAPI'
 import { LMSAPI } from '../src/lmsapi'
+import {ERR} from '../src/defines'
 
 
 // we SHOULD test this separately
@@ -35,6 +36,10 @@ describe('test Scorm.toBoolean()', function () {
 
 describe('configure SCORM wrapper', function () {
     it('configure', function () {
+
+        // don't use Scorm() directly in your SCORM course
+        // always call LMSAPI, and let it call SCORM
+
         let scorm = new Scorm()
         expect(scorm.version).toBe('');
         expect(scorm.isActive).toBe(false);
@@ -66,6 +71,8 @@ describe('configure SCORM wrapper', function () {
 });
 
 describe('LMSAPI Initialize, Terminate, Commit', function () {
+    it('Initialize and Terminate', function () {
+
 
     // SCORM 1.1 / SCORM 1.2
     //
@@ -80,7 +87,7 @@ describe('LMSAPI Initialize, Terminate, Commit', function () {
 
 
 
-    it('Initialize and Terminate', function () {
+
         LMSAPI.attachLMSAPIToWindow()
         let scorm = new Scorm()
 
@@ -209,3 +216,58 @@ describe('ISO Date and CMI time Format', function () {
 })
 
 
+// this follows the Runtime Manual
+
+////////////////////////////////////////////////////////////////////
+/////////////  3.1.3 Session Methods
+////////////////////////////////////////////////////////////////////
+
+
+describe('Session Methods', function () {
+    it('Initialize() and Terminate()', function () {
+
+        let lmsapi = new LMSAPI()
+       
+        expect (lmsapi.Terminate("")).toBe('false')  // can't terminate before initialize
+        expect(lmsapi.GetLastError()).toBe(ERR.TerminationBeforeInitialization) 
+
+        expect(lmsapi.Initialize("")).toBe('true')
+        expect(lmsapi.GetLastError()).toBe(ERR.NoError) 
+        expect(lmsapi.Initialize("")).toBe('false')  // fails second time
+        expect(lmsapi.GetLastError()).toBe(ERR.AlreadyInitialized) 
+
+        expect (lmsapi.Terminate("")).toBe('true')  // normal termination
+        expect(lmsapi.Initialize("")).toBe('false')  // but can't initialize again
+        expect(lmsapi.GetLastError()).toBe(ERR.ContentInstanceTerminated) 
+
+        expect (lmsapi.Terminate("")).toBe('false')  // can't terminate after termination
+        expect(lmsapi.GetLastError()).toBe(ERR.TerminationAfterTermination) 
+
+    })
+
+})
+
+////////////////////////////////////////////////////////////////////
+/////////////  3.1.4 Data-Transfer Methods
+////////////////////////////////////////////////////////////////////
+
+describe('Data-Transfer Methods', function () {
+    it('GetValue() and SetValue()', function () {
+
+        let lmsapi = new LMSAPI()
+        expect(lmsapi.Initialize("")).toBe('true')
+
+        expect(lmsapi.GetValue('cmi.core.student_name')).toBe('Tom')
+
+        expect(lmsapi.GetValue('cmi.core.unknown_value')).toBe('')  // unknown
+        expect(lmsapi.GetLastError()).toBe(ERR.UndefinedDataModelElement) 
+
+        expect(lmsapi.GetValue('cmi.learner_preference.delivery_speed')).toBe('')  // not implemented
+        expect(lmsapi.GetLastError()).toBe(ERR.UnimplementedDataModelElement) 
+
+        expect(lmsapi.GetValue('cmi.core.session_time')).toBe('')  // Write-Only
+        expect(lmsapi.GetLastError()).toBe(ERR.DataModelElementIsWriteOnly) 
+
+    })
+
+})

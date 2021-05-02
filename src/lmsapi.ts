@@ -152,6 +152,9 @@ export class LMSAPI {
         return this.Terminate(x)
     }
     Terminate(x: any): SCORMboolean {   // SCORM 2004 2nd Edition
+        // whether successful or not, a call to Terminate() also calls Commit()
+        this.LMSCommit("")
+
         if ("string" != typeof x || x.length !== 0) {
             console.error(`Expected empty string, got '${x}'`)
             return this._fail(ERR.GeneralArgumentError, 'Expected empty string');
@@ -191,7 +194,7 @@ export class LMSAPI {
             return this._fail(ERR.RetrieveDataBeforeInitialization);
         }
 
-        let [value, error] = this.LMS.getValue(path)
+        let [value, error] = this.LMS.dmGetValue(path)
         if (error !== ERR.NoError)
             this._fail(error)
         else {
@@ -199,97 +202,6 @@ export class LMSAPI {
         }
         return value
     }
-
-
-    //     if ('string' != typeof path) {
-    //         return this._fail(ERR.InvalidArgument, 'GetValue takes a string as parameter');
-    //     }
-    //     var parts = path.split('.');
-    //     if (parts.length < 2) {
-    //         return this._fail(ERR.InvalidArgument, 'undefined data element ' + path);
-    //     }
-    //     if ('cmi' != parts) {
-    //         return this._fail(ERR.NotImplemented, `'${path} is not implemented`);
-    //     }
-    //     if (-1 != ["exit", "sessionTime"].indexOf(parts[1])) {
-    //         return this._fail(ERR.ElementIsWriteOnly);
-    //     }
-
-
-    //     if (parts[1] !== 'core') {
-    //         // we only support the 'core' data elements 
-    //         return this._fail(ERR.NotImplemented, `Not implemented (not core) ` + path);
-    //     }
-
-    //     switch (parts[2]) {   // skip cmi.core....
-
-    //         // these are string RW fields
-    //         case 'lesson_status':
-    //         case 'lesson_location':
-    //             console.log(`'${path}' is ${window.localStorage.getItem(parts[2])}`)
-    //             return window.localStorage.getItem(parts[2]);
-    //             break;
-
-
-    //         case 'total_time':
-    //             return "PT" + window.localStorage.getItem('total_time') + "S";
-    //             break;
-    //         case 'interactions':
-    //             if (parts.length < 3) {
-    //                 return this._fail(ERR.InvalidArgument, 'Unknown data element : ' + path);
-    //             }
-    //             let interactionsString = window.localStorage.getItem('interactions');
-    //             let interactions: any // but hopefully 'object' or 'array
-
-    //             if (null == interactionsString) {     // if not already set, then set to empty array
-    //                 window.localStorage.setItem('interactions', JSON.stringify([]));  // empty array
-    //             } else {
-    //                 try {
-    //                     interactions = JSON.parse(interactionsString);
-    //                 } catch (e) {
-    //                     return this._fail(ERR.GeneralException, "internal : interactions parse error :" + e.message);
-    //                 }
-    //             }
-    //             if ('object' != typeof interactions) {
-    //                 return this._fail(ERR.IncorrectDataType, "internal : interactions is not an object");
-    //             }
-    //             if (!Array.isArray(interactions)) {
-    //                 return this._fail(ERR.IncorrectDataType, "internal : interactions is not an array");
-    //             }
-    //     }
-
-    //     // this is a hot mess ...
-    //     // let nbInteractions: number = interaction.length;
-    //     // switch (parts[2]) {
-    //     //     case '_count':
-    //     //         return nbInteractions;
-    //     //     case '_children':
-    //     //         return FakeLMS.SUPPORTED_INTERACTIONS_FIELDS;
-    //     //     default:
-    //     //         // must be an integer
-    //     //         if (!parts[2].match(/^[0-9]+$/)) {
-    //     //             return this._fail(ERR.InvalidArgument, 'Unknown data element : ' + path);
-    //     //         }
-    //     //         var n = parseInt(parts[2], 10);
-    //     //         if (n >= nbInteractions) {
-    //     //             return this._fail(ERR.NotInitialized  /*not initialized*/);
-    //     //         }
-    //     //         let interaction = nbInteractions[n];
-    //     //         if (parts.length < 4) {
-    //     //             return this._fail(ERR.InvalidArgument, 'Unknown data element : ' + path);
-    //     //         }
-    //     //         var field = parts[3];
-    //     //         if (-1 == FakeLMS.SUPPORTED_INTERACTIONS_FIELDS.indexOf(field)) {
-    //     //             return this._fail(ERR.NotImplemented, `Not implemented ` + path);
-    //     //         }
-    //     //         if (!(field in interaction)) {
-    //     //             return this._fail(ERR.NotInitialized , 'not initialized : ' + path);
-    //     //         }
-    //     //         return interaction[field];
-    //     //         break;
-    //     // }
-    //     return this._fail(ERR.NotImplemented, 'not initialized : ' + path);
-    // }
 
 
 
@@ -307,7 +219,7 @@ export class LMSAPI {
             return this._fail(ERR.StoreDataBeforeInitialization);
         }
 
-        let error = this.LMS.setValue(path, value)
+        let error = this.LMS.dmSetValue(path, value)
         console.assert(error==0, `error ${error} setting path '${path}' to value '${value}'`)
         if (error == ERR.NoError) {
             this._ok()
@@ -469,6 +381,7 @@ export class LMSAPI {
     }
 
 
+    // for now, GetDiagnostic() is identical to GetErrorString()
     LMSGetDiagnostic(x: number) {   // SCORM 1.2
         return this.GetDiagnostic(x)
     }

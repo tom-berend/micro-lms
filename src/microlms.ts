@@ -105,42 +105,51 @@ export class MicroLMS {
 
 
     //** LMS is queried for a value, returns [string,error#] */
-    getValue(path: string): [string, number] {
+    dmGetValue(path: string): [string, number] {
         let dm = this.dataModel.find((element) => element.path == path)
         // console.log('Valid for get', this.dataModel, path, dm)
 
         if (dm === undefined) {       // can't find that path (cmi.something_weird)
-            return ['', ERR.GeneralGetFailure]
-        } else {
-            if (dm.access == 'WO') {        // can't read that path
-                return ['', ERR.DataModelElementIsWriteOnly]
-            }
-            return [dm.get(path), ERR.NoError]
+            return ['', ERR.UndefinedDataModelElement]
         }
+
+        let valid = dm.validate('')  // don't need to validate a 'get' except to see if not implemented
+        if (valid === ERR.UnimplementedDataModelElement) {
+            return ['', ERR.UnimplementedDataModelElement]
+        }
+
+        if (dm.access == 'WO') {        // can't read that path
+            return ['', ERR.DataModelElementIsWriteOnly]
+        }
+        return [dm.get(path), ERR.NoError]
     }
 
 
 
+
     //** LMS receives a value, returns error (hopefully ERR.NoError) */
-    setValue(path: string, value: string | number): number {
+    dmSetValue(path: string, value: string | number): number {
         let dm = this.dataModel.find((element) => element.path == path)
         // console.log('Valid for set', this.dataModel, path, dm)
 
         if (dm === undefined) {       // can't find that path (cmi.something_weird)
             return ERR.GeneralSetFailure
-        } else {
-            if (dm.access == 'RO') {        // can't read that path
-                return ERR.DataModelElementIsReadOnly
-            }
-            let valid = dm.validate(value)
-            if (valid !== ERR.NoError) {
-                return valid
-            }
-            console.log('about to try ',path,value)
-            dm.set(value)
-            return (ERR.NoError)
         }
+       
+        if (dm.access == 'RO') {        // can't read that path
+            return ERR.DataModelElementIsReadOnly
+        }
+
+        let valid = dm.validate(value)
+
+        if (valid !== ERR.NoError) {
+            return valid
+        }
+        console.log('about to try ', path, value)
+        dm.set(value)
+        return (ERR.NoError)
     }
+
 
 
     /** LMS writes data out to localstorage */
@@ -334,8 +343,10 @@ export class MicroLMS {
             'RW',
             (value: any) => (typeof value == 'string') ? ERR.NoError : ERR.DataModelElementTypeMismatch,
             () => this.studentRecord.cmi_core_lesson_location,
-            (value: any) => {this.studentRecord.cmi_core_lesson_location = value
-                            console.log('just set lesson location to ',value)},
+            (value: any) => {
+                this.studentRecord.cmi_core_lesson_location = value
+                console.log('just set lesson location to ', value)
+            },
         )
 
         this.dataModelFactory( // cmi.core.credit (“credit”, “no-credit”, RO) Indicates whether the learner will be credited for performance in the SCO
@@ -350,8 +361,8 @@ export class MicroLMS {
             'cmi.core.lesson_status',
             'RW',
             (value: any) => ["passed", "completed", "failed", "incomplete", "browsed", "not attempted"].includes(value) ? ERR.NoError : ERR.DataModelElementValueOutOfRange,
-            (value: any) => {this.studentRecord.cmi_core_lesson_status},
-            (value: any) => {this.studentRecord.cmi_core_lesson_status = value}
+            (value: any) => { this.studentRecord.cmi_core_lesson_status },
+            (value: any) => { this.studentRecord.cmi_core_lesson_status = value }
         )
 
         //  https://support.scorm.com/hc/en-us/articles/206166706-Separating-failed-from-complete-
@@ -438,6 +449,18 @@ export class MicroLMS {
             (value: any) => true ? ERR.NoError : ERR.GeneralArgumentError,
             (value: any) => true,
             (value: any) => true,
+        )
+
+
+
+
+        // example of an unimplemented data value  (validate returns ERR.Unimplemented)
+        this.dataModelFactory( // 
+            'cmi.learner_preference.delivery_speed',
+            'RW',
+            (value: any) => ERR.UnimplementedDataModelElement,
+            (value: any) => false,
+            (value: any) => false,
         )
 
         return (dataModel)

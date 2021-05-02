@@ -1,6 +1,9 @@
 # micro-lms
 Middleware for SCORM 2004, for writing SCORM courses OR a backend LMS. No dependencies.
 
+## THIS IS A WORK IN PROGRESS
+
+
 To understand how to make your educational package talk via SCORM, work through
 the Jasmine test file.  Then keep watching the console log as you develop and 
 test your package.
