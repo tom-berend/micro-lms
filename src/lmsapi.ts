@@ -105,17 +105,17 @@ export class LMSAPI {
 
 
     /* return the current time in ISO 8601 format */
-    isoDateNow():string{
-        return  new Date(Date.now()).toISOString()  // '2021-04-30T21:38:08.331Z'
+    isoDateNow(): string {
+        return new Date(Date.now()).toISOString()  // '2021-04-30T21:38:08.331Z'
     }
 
 
     /* check that a string is a valid number */
-    isNumeric(num:string):boolean{
+    isNumeric(num: string): boolean {
         let regexNum = RegExp("^-?\\d*(\\.\\d+)?$")
         return regexNum.test(num)
-     }
-            // isoDateNow =  new Date(Date.now()).toISOString())  // '2021-04-30T21:38:08.331Z'
+    }
+    // isoDateNow =  new Date(Date.now()).toISOString())  // '2021-04-30T21:38:08.331Z'
 
 
     ///////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ export class LMSAPI {
         }
         if (this.status == 'Initialized') {
             return this._fail(ERR.AlreadyInitialized);
-        } 
+        }
 
         this.status = 'Initialized'
 
@@ -147,7 +147,7 @@ export class LMSAPI {
     }
 
 
-    
+
     LMSFinish(x: string): SCORMboolean {   // SCORM 1.2
         return this.Terminate(x)
     }
@@ -164,7 +164,7 @@ export class LMSAPI {
         }
         if (this.status !== 'Initialized') {
             return this._fail(ERR.TerminationBeforeInitialization);
-        } 
+        }
         this.status = 'Terminated'
         return 'true'
 
@@ -195,9 +195,10 @@ export class LMSAPI {
         }
 
         let [value, error] = this.LMS.dmGetValue(path)
-        if (error !== ERR.NoError)
+
+        if (error !== ERR.NoError) {
             this._fail(error)
-        else {
+        } else {
             this._ok()
         }
         return value
@@ -220,14 +221,14 @@ export class LMSAPI {
         }
 
         let error = this.LMS.dmSetValue(path, value)
-        console.assert(error==0, `error ${error} setting path '${path}' to value '${value}'`)
+        console.assert(error == 0, `error ${error} setting path '${path}' to value '${value}'`)
         if (error == ERR.NoError) {
             this._ok()
-            return true
+            return 'true'
         }
         else {
             this._fail(error)
-            return false
+            return 'false'
         }
     }
 
@@ -367,7 +368,6 @@ export class LMSAPI {
     LMSGetLastError() {   // SCORM 1.2
         return this.GetLastError()
     }
-
     GetLastError() {  // SCORM 2004 2nd Edition
         return this.lastErrcode;
     }

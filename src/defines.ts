@@ -10,6 +10,8 @@
 // Element is write only (404) LMSGetValue was called on a data model element that can only be written to.
 // Incorrect Data Type (405) LMSSetValue was called with a value that is not consistent with the data format of the supplied data model element.
 
+import { MicroLMS } from "./microlms"
+
 
 export let errString = new Map()
 
@@ -82,3 +84,26 @@ errString.set(405, "GetValue was called on a data model element that can only be
 errString.set(406, "SetValue was called with a value that is not consistent with the data format of the supplied data model element.")
 errString.set(407, "The numeric value supplied to a SetValue call is outside of the numeric range allowed for the supplied data model element.")
 errString.set(408, "Some data model elements cannot be set until another data model element was set. This error condition indicates that the prerequisite element was not set before the dependent element.")
+
+
+
+
+// the classes that manage groups (eg: cmi.core) implement this interface
+export interface DataModelElementGroup {
+    get(path: string): [string, number]   // returns [value,error]
+    set(value:string, path: string, n?: number, element?: string): number   // returns error
+}
+
+
+
+
+// every supported cmi path (eg: 'cmi.student_id') is coded with 
+// a 'dataElement' which has validate, get, and set blocks
+export type DataElement = {
+    path: string,
+    access: 'RO' | 'RW' | 'WO' | '**',      // ** means unimplemented, not standard SCORM 
+    validate: <T = string>(value: T) => number,    // number is an error code
+    get: Function,
+    set: Function
+}
+

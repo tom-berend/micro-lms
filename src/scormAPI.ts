@@ -48,7 +48,7 @@ export class Scorm {
     }
 
     initialize() {
-        let success = false,
+        let success = 'false',
             traceMsgPrefix = 'scorm.initialize ';
 
         this.debug('connection.initialize called.');
@@ -61,10 +61,10 @@ export class Scorm {
             if (API) {
                 switch (this.version) {
                     case '1.2':
-                        success = toBoolean(API.LMSInitialize('')) ?? false;
+                        success = toSCORMBoolean(API.LMSInitialize('')) ?? 'false';
                         break;
                     case '2004':
-                        success = toBoolean(API.Initialize('')) ?? false;
+                        success = toSCORMBoolean(API.Initialize('')) ?? 'false';
                         break;
                 }
 
@@ -104,7 +104,7 @@ export class Scorm {
                             }
                         }
                     } else {
-                        success = false;
+                        success = 'false';
                         this.debug(
                             traceMsgPrefix +
                             'failed. \nError code: ' +
@@ -140,7 +140,7 @@ export class Scorm {
 
 
     terminate() {
-        let success = false,
+        let success = 'false',
             traceMsgPrefix = 'scorm.terminate ';
 
         if (this.isActive) {
@@ -176,10 +176,10 @@ export class Scorm {
                 if (success) {
                     switch (this.version) {
                         case '1.2':
-                            success = toBoolean(API.LMSFinish('')) ?? false;
+                            success = toSCORMBoolean(API.LMSFinish('')) ?? 'false';
                             break;
                         case '2004':
-                            success = toBoolean(API.Terminate('')) ?? false;
+                            success = toSCORMBoolean(API.Terminate('')) ?? 'false';
                             break;
                     }
 
@@ -265,8 +265,8 @@ export class Scorm {
         return String(value);
     }
 
-    set(parameter: string, value: string | number) {
-        let success = false,
+    set(parameter: string, value: string | number):string {
+        let success = 'false',
             traceMsgPrefix = "scorm.set('" + parameter + "') ";
 
         if (this.isActive) {
@@ -276,10 +276,10 @@ export class Scorm {
             if (API) {
                 switch (this.version) {
                     case '1.2':
-                        success = toBoolean(API.LMSSetValue(parameter, value)) ?? false;
+                        success = toSCORMBoolean(API.LMSSetValue(parameter, value)) ?? 'false';
                         break;
                     case '2004':
-                        success = toBoolean(API.SetValue(parameter, value)) ?? false;
+                        success = toSCORMBoolean(API.SetValue(parameter, value)) ?? 'false';
                         break;
                 }
 
@@ -313,8 +313,8 @@ export class Scorm {
         return success;
     }
 
-    commit() {
-        let success = false,
+    commit():string {
+        let success = 'false',
             traceMsgPrefix = 'scorm.commit failed';
 
         if (this.isActive) {
@@ -323,10 +323,10 @@ export class Scorm {
             if (API) {
                 switch (this.version) {
                     case '1.2':
-                        success = toBoolean(API.LMSCommit('')) ?? false;
+                        success = toSCORMBoolean(API.LMSCommit('')) ?? 'false';
                         break;
                     case '2004':
-                        success = toBoolean(API.Commit('')) ?? false;
+                        success = toSCORMBoolean(API.Commit('')) ?? 'false';
                         break;
                 }
             } else {
@@ -579,19 +579,20 @@ export class Scorm {
 
 }
 
-export function toBoolean(value: any) {
+export function toSCORMBoolean(value: any):string {
     switch (typeof (value)) {
         case 'object':
+            return 'false'
         case 'string':
-            return /(true|1)/i.test(value);
+            return (value=='false' || value=='0')?'false':'true'
         case 'number':
-            return !!value;
+            return (value!==0)?'true':'false';
         case 'boolean':
-            return value;
+            return value?'true':'false';
         case 'undefined':
-            return null;
+            return 'false';
         default:
-            return false;
+            return 'false';
     }
 };
 
